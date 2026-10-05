@@ -1,0 +1,16 @@
+extends Control
+
+@onready var world: Node = get_parent()
+@onready var player: Node = world.get_node_or_null("Player")
+@onready var time_manager: Node = world.get_node_or_null("TimeManager")
+
+func _ready() -> void:
+    visible = true
+    if player != null:
+        player.set("interaction_label", $InteractionLabel)
+    if time_manager != null:
+        $TopPanel/TimeLabel.text = "Time: 07:00"
+
+func _process(_delta: float) -> void:
+    if time_manager != null:
+        $TopPanel/TimeLabel.text = "Time: %s" % time_manager.get_time_string()

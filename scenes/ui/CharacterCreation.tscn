@@ -1,0 +1,39 @@
+extends Control
+
+var creator: CharacterCreator
+
+@onready var name_field: LineEdit = $Panel/VBoxContainer/NameRow/NameEdit
+@onready var gender_button: OptionButton = $Panel/VBoxContainer/GenderRow/GenderOption
+@onready var skin_button: OptionButton = $Panel/VBoxContainer/SkinRow/SkinOption
+@onready var hair_button: OptionButton = $Panel/VBoxContainer/HairRow/HairOption
+@onready var create_button: Button = $Panel/VBoxContainer/CreateButton
+
+func _ready() -> void:
+    creator = CharacterCreator.new()
+    creator.apply_defaults()
+    setup_options()
+    create_button.pressed.connect(_on_create_pressed)
+
+func setup_options() -> void:
+    gender_button.add_item("Male")
+    gender_button.add_item("Female")
+    gender_button.add_item("Non-binary")
+    skin_button.add_item("Light")
+    skin_button.add_item("Medium")
+    skin_button.add_item("Dark")
+    hair_button.add_item("Short")
+    hair_button.add_item("Cornrows")
+    hair_button.add_item("Fade")
+
+func _on_create_pressed() -> void:
+    creator.name_value = name_field.text if name_field.text.strip_edges() != "" else creator.name_value
+    creator.gender_presentation = ["male", "female", "non_binary"][gender_button.selected]
+    creator.skin_tone = ["light", "medium", "dark"][skin_button.selected]
+    creator.hair_style = ["short", "cornrows", "fade"][hair_button.selected]
+    
+    var summary = creator.generate_summary()
+    print("Character created: %s" % summary)
+    visible = false
+
+func get_summary() -> Dictionary:
+    return creator.generate_summary()
