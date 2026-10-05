@@ -1,11 +1,10 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=55 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/Main.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/player/Player.gd" id="2_player"]
-[ext_resource type="Script" path="res://scripts/npc/NPCBehavior.gd" id="3_npc"]
+[ext_resource type="Script" path="res://scripts/npc/NPC.gd" id="3_npc"]
 [ext_resource type="Script" path="res://scripts/core/TimeManager.gd" id="4_time"]
 [ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="5_hud"]
-[ext_resource type="Script" path="res://scripts/ui/CharacterCreationUI.gd" id="6_char_create"]
 [ext_resource type="Script" path="res://scripts/market/MarketStall.gd" id="7_market"]
 [ext_resource type="Script" path="res://scripts/agriculture/FarmInteraction.gd" id="8_farm"]
 
@@ -14,6 +13,9 @@ size = Vector3(100, 1, 100)
 
 [sub_resource type="BoxShape3D" id="ground_shape"]
 size = Vector3(100, 1, 100)
+
+[sub_resource type="StandardMaterial3D" id="ground_material"]
+albedo_color = Color(0.2, 0.5, 0.2, 1)
 
 [sub_resource type="CapsuleShape3D" id="player_collision"]
 radius = 0.45
@@ -32,6 +34,9 @@ size = Vector3(0.25, 0.9, 0.25)
 [sub_resource type="BoxMesh" id="player_arm"]
 size = Vector3(0.2, 0.8, 0.2)
 
+[sub_resource type="StandardMaterial3D" id="player_material"]
+albedo_color = Color(0.8, 0.6, 0.4, 1)
+
 [sub_resource type="CapsuleShape3D" id="npc_collision"]
 radius = 0.45
 height = 1.8
@@ -43,12 +48,6 @@ size = Vector3(0.55, 1.2, 0.35)
 radius = 0.3
 height = 0.6
 
-[sub_resource type="StandardMaterial3D" id="ground_material"]
-albedo_color = Color(0.2, 0.5, 0.2, 1)
-
-[sub_resource type="StandardMaterial3D" id="player_material"]
-albedo_color = Color(0.8, 0.6, 0.4, 1)
-
 [sub_resource type="StandardMaterial3D" id="npc_material"]
 albedo_color = Color(0.6, 0.4, 0.3, 1)
 
@@ -58,6 +57,18 @@ background_color = Color(0.5, 0.7, 1.0, 1)
 ambient_light_source = 2
 ambient_light_color = Color(0.9, 0.9, 1.0, 1)
 ambient_light_energy = 0.8
+
+[sub_resource type="BoxMesh" id="market_mesh"]
+size = Vector3(3, 0.5, 2)
+
+[sub_resource type="StandardMaterial3D" id="market_material"]
+albedo_color = Color(0.8, 0.7, 0.3, 1)
+
+[sub_resource type="BoxMesh" id="plot_mesh"]
+size = Vector3(2, 0.1, 2)
+
+[sub_resource type="StandardMaterial3D" id="plot_material"]
+albedo_color = Color(0.4, 0.35, 0.2, 1)
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_main")
@@ -125,7 +136,7 @@ material_override = SubResource("player_material")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Player/CameraPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -5.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
 current = true
 fov = 70.0
 
@@ -157,9 +168,9 @@ stall_name = "Amina's Market"
 stall_position = Vector3(-15, 0.5, 0)
 
 [node name="Marker" type="MeshInstance3D" parent="MarketStall"]
-mesh = BoxMesh.new()
-mesh.size = Vector3(3, 0.5, 2)
-material_override = StandardMaterial3D.new()
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("market_mesh")
+material_override = SubResource("market_material")
 
 [node name="Farm" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.2, 8)
@@ -169,30 +180,27 @@ farm_position = Vector3(15, 0.2, 8)
 plot_count = 4
 
 [node name="PlotMarkers" type="Node3D" parent="Farm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="Plot1" type="MeshInstance3D" parent="Farm/PlotMarkers"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -2)
-mesh = BoxMesh.new()
-mesh.size = Vector3(2, 0.1, 2)
-material_override = StandardMaterial3D.new()
+mesh = SubResource("plot_mesh")
+material_override = SubResource("plot_material")
 
 [node name="Plot2" type="MeshInstance3D" parent="Farm/PlotMarkers"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -2)
-mesh = BoxMesh.new()
-mesh.size = Vector3(2, 0.1, 2)
-material_override = StandardMaterial3D.new()
+mesh = SubResource("plot_mesh")
+material_override = SubResource("plot_material")
 
 [node name="Plot3" type="MeshInstance3D" parent="Farm/PlotMarkers"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 2)
-mesh = BoxMesh.new()
-mesh.size = Vector3(2, 0.1, 2)
-material_override = StandardMaterial3D.new()
+mesh = SubResource("plot_mesh")
+material_override = SubResource("plot_material")
 
 [node name="Plot4" type="MeshInstance3D" parent="Farm/PlotMarkers"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 2)
-mesh = BoxMesh.new()
-mesh.size = Vector3(2, 0.1, 2)
-material_override = StandardMaterial3D.new()
+mesh = SubResource("plot_mesh")
+material_override = SubResource("plot_material")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("5_hud")
@@ -201,38 +209,34 @@ script = ExtResource("5_hud")
 anchors_preset = 10
 anchor_left = 0.0
 anchor_right = 1.0
-offset_top = 0
 offset_bottom = 70
 grow_horizontal = 2
 
 [node name="TimeLabel" type="Label" parent="HUD/TopBar"]
-anchors_preset = 7
+anchors_preset = 6
 anchor_left = 0.02
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_top = -12
 offset_right = 200
-offset_bottom = 12
+offset_bottom = 24
 text = "Time: 07:00"
 
 [node name="MoneyLabel" type="Label" parent="HUD/TopBar"]
-anchors_preset = 7
+anchors_preset = 6
 anchor_left = 0.45
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_top = -12
 offset_right = 220
-offset_bottom = 12
+offset_bottom = 24
 text = "Ark Credits: 150"
 
 [node name="SkillLabel" type="Label" parent="HUD/TopBar"]
-anchors_preset = 7
+anchors_preset = 6
 anchor_left = 0.75
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_top = -12
 offset_right = 220
-offset_bottom = 12
+offset_bottom = 24
 text = "Agriculture: Lv. 1"
 
 [node name="InteractionLabel" type="Label" parent="HUD"]
@@ -250,5 +254,4 @@ vertical_alignment = 1
 text = ""
 
 [node name="CharacterCreation" type="CanvasLayer" parent="."]
-script = ExtResource("6_char_create")
 layer = 100
