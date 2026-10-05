@@ -1,68 +1,254 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=25 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1_3m4n3"]
+[ext_resource type="Script" path="res://scripts/core/Main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/player/Player.gd" id="2_player"]
+[ext_resource type="Script" path="res://scripts/npc/NPCBehavior.gd" id="3_npc"]
+[ext_resource type="Script" path="res://scripts/core/TimeManager.gd" id="4_time"]
+[ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="5_hud"]
+[ext_resource type="Script" path="res://scripts/ui/CharacterCreationUI.gd" id="6_char_create"]
+[ext_resource type="Script" path="res://scripts/market/MarketStall.gd" id="7_market"]
+[ext_resource type="Script" path="res://scripts/agriculture/FarmInteraction.gd" id="8_farm"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7i5h3"]
-bg_color = Color(0.07, 0.09, 0.14, 0.88)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="BoxMesh" id="ground_mesh"]
+size = Vector3(100, 1, 100)
 
-[node name="HUD" type="CanvasLayer"]
-script = ExtResource("1_3m4n3")
+[sub_resource type="BoxShape3D" id="ground_shape"]
+size = Vector3(100, 1, 100)
 
-[node name="TopBar" type="Panel" parent="."]
+[sub_resource type="CapsuleShape3D" id="player_collision"]
+radius = 0.45
+height = 1.8
+
+[sub_resource type="BoxMesh" id="player_torso"]
+size = Vector3(0.55, 1.2, 0.35)
+
+[sub_resource type="SphereMesh" id="player_head"]
+radius = 0.3
+height = 0.6
+
+[sub_resource type="BoxMesh" id="player_leg"]
+size = Vector3(0.25, 0.9, 0.25)
+
+[sub_resource type="BoxMesh" id="player_arm"]
+size = Vector3(0.2, 0.8, 0.2)
+
+[sub_resource type="CapsuleShape3D" id="npc_collision"]
+radius = 0.45
+height = 1.8
+
+[sub_resource type="BoxMesh" id="npc_torso"]
+size = Vector3(0.55, 1.2, 0.35)
+
+[sub_resource type="SphereMesh" id="npc_head"]
+radius = 0.3
+height = 0.6
+
+[sub_resource type="StandardMaterial3D" id="ground_material"]
+albedo_color = Color(0.2, 0.5, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="player_material"]
+albedo_color = Color(0.8, 0.6, 0.4, 1)
+
+[sub_resource type="StandardMaterial3D" id="npc_material"]
+albedo_color = Color(0.6, 0.4, 0.3, 1)
+
+[sub_resource type="Environment" id="world_env"]
+background_mode = 1
+background_color = Color(0.5, 0.7, 1.0, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.9, 0.9, 1.0, 1)
+ambient_light_energy = 0.8
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("world_env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.433, 0.25, 0, 0.5, 0.866, -0.5, -0.75, 0.433, 0, 10, 0)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="TimeManager" type="Node" parent="."]
+script = ExtResource("4_time")
+
+[node name="Ground" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("ground_mesh")
+material_override = SubResource("ground_material")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+shape = SubResource("ground_shape")
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+script = ExtResource("2_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("player_collision")
+
+[node name="Visuals" type="Node3D" parent="Player"]
+
+[node name="Torso" type="MeshInstance3D" parent="Player/Visuals"]
+mesh = SubResource("player_torso")
+material_override = SubResource("player_material")
+
+[node name="Head" type="MeshInstance3D" parent="Player/Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+mesh = SubResource("player_head")
+material_override = SubResource("player_material")
+
+[node name="LeftArm" type="MeshInstance3D" parent="Player/Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0.3, 0)
+mesh = SubResource("player_arm")
+material_override = SubResource("player_material")
+
+[node name="RightArm" type="MeshInstance3D" parent="Player/Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.3, 0)
+mesh = SubResource("player_arm")
+material_override = SubResource("player_material")
+
+[node name="LeftLeg" type="MeshInstance3D" parent="Player/Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, -0.73, 0)
+mesh = SubResource("player_leg")
+material_override = SubResource("player_material")
+
+[node name="RightLeg" type="MeshInstance3D" parent="Player/Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, -0.73, 0)
+mesh = SubResource("player_leg")
+material_override = SubResource("player_material")
+
+[node name="CameraPivot" type="Node3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Player/CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -5.5)
+current = true
+fov = 70.0
+
+[node name="Guide" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1.1, -5)
+script = ExtResource("3_npc")
+npc_name = "The Guide"
+profession = "Mentor"
+work_position = Vector3(7, 0, -5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Guide"]
+shape = SubResource("npc_collision")
+
+[node name="Visuals" type="Node3D" parent="Guide"]
+
+[node name="Torso" type="MeshInstance3D" parent="Guide/Visuals"]
+mesh = SubResource("npc_torso")
+material_override = SubResource("npc_material")
+
+[node name="Head" type="MeshInstance3D" parent="Guide/Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("npc_head")
+material_override = SubResource("npc_material")
+
+[node name="MarketStall" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 0.5, 0)
+script = ExtResource("7_market")
+stall_name = "Amina's Market"
+stall_position = Vector3(-15, 0.5, 0)
+
+[node name="Marker" type="MeshInstance3D" parent="MarketStall"]
+mesh = BoxMesh.new()
+mesh.size = Vector3(3, 0.5, 2)
+material_override = StandardMaterial3D.new()
+
+[node name="Farm" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.2, 8)
+script = ExtResource("8_farm")
+farm_name = "Community Garden"
+farm_position = Vector3(15, 0.2, 8)
+plot_count = 4
+
+[node name="PlotMarkers" type="Node3D" parent="Farm"]
+
+[node name="Plot1" type="MeshInstance3D" parent="Farm/PlotMarkers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -2)
+mesh = BoxMesh.new()
+mesh.size = Vector3(2, 0.1, 2)
+material_override = StandardMaterial3D.new()
+
+[node name="Plot2" type="MeshInstance3D" parent="Farm/PlotMarkers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -2)
+mesh = BoxMesh.new()
+mesh.size = Vector3(2, 0.1, 2)
+material_override = StandardMaterial3D.new()
+
+[node name="Plot3" type="MeshInstance3D" parent="Farm/PlotMarkers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 2)
+mesh = BoxMesh.new()
+mesh.size = Vector3(2, 0.1, 2)
+material_override = StandardMaterial3D.new()
+
+[node name="Plot4" type="MeshInstance3D" parent="Farm/PlotMarkers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 2)
+mesh = BoxMesh.new()
+mesh.size = Vector3(2, 0.1, 2)
+material_override = StandardMaterial3D.new()
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("5_hud")
+
+[node name="TopBar" type="Panel" parent="HUD"]
 anchors_preset = 10
 anchor_left = 0.0
 anchor_right = 1.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 70.0
+offset_top = 0
+offset_bottom = 70
 grow_horizontal = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_7i5h3")
 
-[node name="TimeLabel" type="Label" parent="TopBar"]
-layout_mode = 0
+[node name="TimeLabel" type="Label" parent="HUD/TopBar"]
+anchors_preset = 7
 anchor_left = 0.02
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_top = -12.0
-offset_right = 200.0
-offset_bottom = 12.0
+offset_top = -12
+offset_right = 200
+offset_bottom = 12
 text = "Time: 07:00"
 
-[node name="MoneyLabel" type="Label" parent="TopBar"]
-layout_mode = 0
+[node name="MoneyLabel" type="Label" parent="HUD/TopBar"]
+anchors_preset = 7
 anchor_left = 0.45
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_top = -12.0
-offset_right = 220.0
-offset_bottom = 12.0
+offset_top = -12
+offset_right = 220
+offset_bottom = 12
 text = "Ark Credits: 150"
 
-[node name="SkillLabel" type="Label" parent="TopBar"]
-layout_mode = 0
+[node name="SkillLabel" type="Label" parent="HUD/TopBar"]
+anchors_preset = 7
 anchor_left = 0.75
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_top = -12.0
-offset_right = 220.0
-offset_bottom = 12.0
+offset_top = -12
+offset_right = 220
+offset_bottom = 12
 text = "Agriculture: Lv. 1"
 
-[node name="InteractionLabel" type="Label" parent="."]
+[node name="InteractionLabel" type="Label" parent="HUD"]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -180.0
-offset_top = -70.0
-offset_right = 180.0
-offset_bottom = -20.0
+offset_left = -180
+offset_top = -70
+offset_right = 180
+offset_bottom = -20
 horizontal_alignment = 1
 vertical_alignment = 1
 text = ""
+
+[node name="CharacterCreation" type="CanvasLayer" parent="."]
+script = ExtResource("6_char_create")
+layer = 100
