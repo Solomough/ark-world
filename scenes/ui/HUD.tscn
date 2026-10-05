@@ -4,33 +4,29 @@ extends CanvasLayer
 @onready var money_label: Label = $TopBar/MoneyLabel
 @onready var skill_label: Label = $TopBar/SkillLabel
 @onready var interaction_label: Label = $InteractionLabel
-@onready var status_panel: Panel = $StatusPanel
+@onready var status_bar: Panel = $TopBar
 
 var world_time: Node
 var player_ref: Node
 
 func _ready() -> void:
-    visible = true
     update_hud()
 
 func _process(_delta: float) -> void:
-    if world_time:
+    if world_time != null:
         time_label.text = "Time: %s" % world_time.get_time_string()
-        status_panel.visible = true
-    if player_ref:
-        var skill_state = player_ref.get_skills()
-        if skill_state:
-            var agriculture = skill_state.get_skill_level("agriculture")
-            skill_label.text = "Agriculture: Lv. %d" % agriculture
-        var inv = player_ref.get_inventory()
-        if inv:
-            money_label.text = "Ark Credits: %s" % str(int(player_ref.economy.get_player_money()))
+    if player_ref != null and player_ref.get_skills() != null:
+        var skills = player_ref.get_skills()
+        if skills.has_method("get_skill_level"):
+            skill_label.text = "Agriculture: Lv. %d" % skills.get_skill_level("agriculture")
+    if player_ref != null and player_ref.economy != null:
+        money_label.text = "Ark Credits: %s" % str(int(player_ref.economy.player_money))
 
 func set_world_time(node: Node) -> void:
     world_time = node
 
-func set_player(player: Node) -> void:
-    player_ref = player
+func set_player(node: Node) -> void:
+    player_ref = node
 
 func update_hud() -> void:
     if time_label:
