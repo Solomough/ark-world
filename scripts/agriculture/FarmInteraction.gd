@@ -33,7 +33,7 @@ func plant_crop(plot_index: int, crop_type: String) -> bool:
         var seed_type = "seed_%s" % crop_type
         if not player_inventory.remove_item(seed_type, 1):
             return false
-    
+
     if plot_index >= 0 and plot_index < plots.size():
         return plots[plot_index].plant(crop_type)
     return false
@@ -60,4 +60,4 @@ func get_plots_state() -> Array:
     return state
 
 func get_farm_greeting() -> String:
-    return "This is %s. You can till, plant, water, and harvest crops here." % farm_name
+    return "This is %s. Till, plant, water, and harvest your crops here." % farm_name

@@ -1,41 +1,83 @@
 extends Node
 
-class_name SaveManager
+class_name QuestSystem
 
-const SAVE_PATH := "user://ark_world_save.json"
-var save_version := 1
+signal quest_updated
 
-func save_game(data: Dictionary) -> Error:
-    var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-    if file == null:
-        return FileAccess.get_open_error()
+var active_quests: Dictionary = {}
+var quest_log: Array = []
 
-    var payload := data.duplicate()
-    payload["save_version"] = save_version
-    file.store_string(JSON.stringify(payload, "", true))
-    file.close()
-    return OK
+func _ready() -> void:
+    start_default_quest()
 
-func load_game() -> Dictionary:
-    if not FileAccess.file_exists(SAVE_PATH):
-        return {}
+func start_default_quest() -> void:
+    var quest_id := "starter_guide"
+    if active_quests.has(quest_id):
+        return
 
-    var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-    if file == null:
-        return {}
+    var quest := {
+        "id": quest_id,
+        "title": "Welcome to Ark World",
+        "description": "Meet The Guide and learn the basics of work, land, and opportunity.",
+        "objectives": [
+            {"id": "talk_to_guide", "text": "Speak with The Guide", "done": false},
+            {"id": "visit_market", "text": "Visit the market square", "done": false},
+            {"id": "learn_basic_work", "text": "Learn the first opportunity path", "done": false}
+        ],
+        "reward": {"money": 50.0, "xp": 25},
+        "completed": false
+    }
+    active_quests[quest_id] = quest
+    quest_log.append(quest["title"])
+    emit_signal("quest_updated")
 
-    var json := JSON.new()
-    var parse_error := json.parse(file.get_as_text())
-    file.close()
+func start_quest(quest_id: String) -> void:
+    if active_quests.has(quest_id):
+        return
 
-    if parse_error != OK:
-        return {}
+    var quest := {
+        "id": quest_id,
+        "title": "Opportunity",
+        "description": "A new chance has appeared in the settlement.",
+        "objectives": [],
+        "reward": {"money": 10.0, "xp": 10},
+        "completed": false
+    }
+    active_quests[quest_id] = quest
+    quest_log.append(quest["title"])
+    emit_signal("quest_updated")
 
-    var payload = json.data
-    if payload is Dictionary:
-        return payload as Dictionary
-    return {}
+func complete_objective(quest_id: String, objective_id: String) -> void:
+    if not active_quests.has(quest_id):
+        return
 
-func delete_save() -> void:
-    if FileAccess.file_exists(SAVE_PATH):
-        DirAccess.remove_absolute(SAVE_PATH)
+    var quest = active_quests[quest_id]
+    for objective in quest["objectives"]:
+        if objective["id"] == objective_id:
+            objective["done"] = true
+            break
+
+    if all_objectives_done(quest):
+        quest["completed"] = true
+        emit_signal("quest_updated")
+
+func all_objectives_done(quest: Dictionary) -> bool:
+    for objective in quest["objectives"]:
+        if not objective["done"]:
+            return false
+    return true
+
+func get_active_quests() -> Array:
+    var result: Array = []
+    for quest in active_quests.values():
+        result.append(quest)
+    return result
+
+func has_active_quests() -> bool:
+    return not active_quests.is_empty()
+
+func get_current_quest_text() -> String:
+    if active_quests.is_empty():
+        return "No active quest"
+    var quest = active_quests.values()[0]
+    return quest["title"]

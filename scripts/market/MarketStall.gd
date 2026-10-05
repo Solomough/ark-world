@@ -9,7 +9,6 @@ class_name MarketStall
 @export var sell_items: Array = ["maize", "tomato", "vegetable"]
 
 var inventory: Dictionary = {}
-var prices: Dictionary = {}
 
 func _ready() -> void:
     add_to_group("market_stall")
@@ -25,31 +24,31 @@ func initialize_inventory() -> void:
 func can_buy_item(item_id: String, quantity: int) -> bool:
     return inventory.get(item_id, 0) >= quantity
 
-func buy_from_player(item_id: String, quantity: int, player_economy: Node) -> bool:
+func buy_from_player(item_id: String, quantity: int, player_economy: EconomySystem) -> bool:
     if not item_id in sell_items:
         return false
     if quantity <= 0:
         return false
-    
+
     var price_per_item = player_economy.get_price(item_id)
     var total = price_per_item * quantity
-    
+
     if player_economy.player_money < total:
         return false
-    
+
     player_economy.player_money -= total
     inventory[item_id] = inventory.get(item_id, 0) + quantity
     return true
 
-func sell_to_player(item_id: String, quantity: int, player_economy: Node) -> bool:
+func sell_to_player(item_id: String, quantity: int, player_economy: EconomySystem) -> bool:
     if not item_id in buy_items:
         return false
     if not can_buy_item(item_id, quantity):
         return false
-    
+
     var price_per_item = player_economy.get_price(item_id)
     var total = price_per_item * quantity
-    
+
     player_economy.player_money += total
     inventory[item_id] -= quantity
     return true
@@ -58,4 +57,4 @@ func get_inventory() -> Dictionary:
     return inventory.duplicate()
 
 func get_vendor_greeting() -> String:
-    return "Welcome to %s. I have seeds, tools, and buy your produce." % stall_name
+    return "Welcome to %s. I have seeds, tools, and I'll buy your produce." % stall_name
