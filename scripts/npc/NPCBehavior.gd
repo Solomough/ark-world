@@ -11,29 +11,56 @@ var state := "idle"
 var target_position: Vector3 = Vector3.ZERO
 var timer := 0.0
 var current_game_time: float = 7.0
+var dialogue_topics: Dictionary = {}
+var has_spoken: bool = false
 
 func _ready() -> void:
     add_to_group("npc")
     home_position = global_position
     setup_schedule()
+    setup_dialogue()
     target_position = work_position
 
 func setup_schedule() -> void:
     schedule = NPCSchedule.new()
-    # Morning: 7-12, work
     schedule.add_activity(7.0, 12.0, work_position, "work")
-    # Afternoon: 12-17, work
     schedule.add_activity(12.0, 17.0, work_position, "work")
-    # Evening: 17-21, home
     schedule.add_activity(17.0, 21.0, home_position, "rest")
-    # Night: 21-7, home
     schedule.add_activity(21.0, 24.0, home_position, "sleep")
     schedule.add_activity(0.0, 7.0, home_position, "sleep")
+
+func setup_dialogue() -> void:
+    dialogue_topics = {
+        "greeting": {
+            "text": "Hello there. I'm %s, a %s." % [npc_name, profession],
+            "choices": [
+                {"text": "What do you do?", "next_dialogue": "profession"},
+                {"text": "Any work available?", "next_dialogue": "work_opportunity"},
+                {"text": "Goodbye.", "next_dialogue": "farewell"}
+            ]
+        },
+        "profession": {
+            "text": "I work as a %s here in the settlement. It's honest work." % profession,
+            "choices": [
+                {"text": "Back.", "next_dialogue": "greeting"}
+            ]
+        },
+        "work_opportunity": {
+            "text": "Yes, there's always something to do. Learn our skills and earn value.",
+            "choices": [
+                {"text": "I'm interested.", "action": {"type": "quest_complete", "quest_id": "starter_guide", "objective_id": "talk_to_guide"}},
+                {"text": "Maybe later.", "next_dialogue": "greeting"}
+            ]
+        },
+        "farewell": {
+            "text": "Good luck out there.",
+            "choices": []
+        }
+    }
 
 func _physics_process(delta: float) -> void:
     timer += delta
     
-    # Update target based on schedule
     if timer > 2.0:
         target_position = schedule.get_current_target(current_game_time)
         var activity = schedule.get_current_activity(current_game_time)
@@ -57,22 +84,16 @@ func _physics_process(delta: float) -> void:
 func set_game_time(time: float) -> void:
     current_game_time = time
 
+func get_dialogue(topic: String) -> Dictionary:
+    if dialogue_topics.has(topic):
+        return dialogue_topics[topic]
+    return dialogue_topics.get("greeting", {"text": "..."})
+
 func talk_to() -> Dictionary:
+    has_spoken = true
     return {
         "name": npc_name,
         "profession": profession,
-        "greeting": get_greeting_for_time(),
-        "has_quest": false,
+        "greeting": get_dialogue("greeting")["text"],
+        "has_quest": true,
     }
-
-func get_greeting_for_time() -> String:
-    var activity = schedule.get_current_activity(current_game_time)
-    match activity:
-        "work":
-            return "I'm working on something important right now."
-        "rest":
-            return "Good to see you. I'm relaxing for a bit."
-        "sleep":
-            return "It's late... I should get some rest."
-        _:
-            return "Hello there."
